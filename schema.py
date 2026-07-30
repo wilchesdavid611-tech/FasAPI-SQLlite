@@ -1,12 +1,13 @@
 from pydantic import BaseModel
 
-class AprendizCREAR(BaseModel):
-    nombre: str
-    documento: str
-    programa : str
+class ModuloCrear(BaseModel):
+    titulo: str
+    lenguaje: str
+    horas: int
+    disponible: bool = True
 
-class AprendizRespuesta(AprendizCREAR):
+class ModuloRespuesta(ModuloCrear):
     id: int
 
-class config:
-    from_atribute = True
+    class Config:
+        from_attributes = True

@@ -6,7 +6,6 @@ import models
 import schemas
 from database import engine, get_db
 
-
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="API de Asignaturas con SQLAlchemy")
@@ -16,13 +15,13 @@ def crear_asignatura(asignatura: schemas.AsignaturaCrear, db: Session = Depends(
 
     horas_autonomas = (asignatura.creditos * 48) - asignatura.horas_presenciales
     
-    # 2. Validación de límite
+
     if horas_autonomas < 10:
         raise HTTPException(
             status_code=400,
             detail="Las horas presenciales superan el límite permitido para el número de créditos."
         )
-
+    
     if asignatura.creditos >= 5 or horas_autonomas > 120:
         nivel_dificultad = "Avanzado"
     elif 3 <= asignatura.creditos <= 4:
@@ -30,7 +29,6 @@ def crear_asignatura(asignatura: schemas.AsignaturaCrear, db: Session = Depends(
     else:
         nivel_dificultad = "Básico"
         
-
     nueva_asignatura = models.Asignatura(
         nombre=asignatura.nombre,
         creditos=asignatura.creditos,
@@ -39,7 +37,7 @@ def crear_asignatura(asignatura: schemas.AsignaturaCrear, db: Session = Depends(
         nivel_dificultad=nivel_dificultad
     )
     
-
+   
     db.add(nueva_asignatura)
     db.commit()
     db.refresh(nueva_asignatura)
@@ -49,12 +47,12 @@ def crear_asignatura(asignatura: schemas.AsignaturaCrear, db: Session = Depends(
 
 @app.get("/asignaturas/resumen", response_model=List[schemas.AsignaturaResumen])
 def resumen_asignaturas(db: Session = Depends(get_db)):
+
     asignaturas = db.query(models.Asignatura).all()
     
     resultado = []
     
     for asig in asignaturas:
-  
         total_semanal = (asig.horas_presenciales + asig.horas_autonomas) / 16
         total_semanal_redondeado = round(total_semanal, 1)
         

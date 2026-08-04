@@ -1,28 +1,18 @@
-import sqlite3
-from contextlib import contextmanager
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-DB_NAME = "modulos.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./asignaturas.db"
 
-@contextmanager
-def obtener_conexion():
-    conexion = sqlite3.connect(DB_NAME)
-    conexion.row_factory = sqlite3.Row 
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
     try:
-        yield conexion
+        yield db
     finally:
-        conexion.close()
-
-def inicializar_db():
-    """Crea la tabla 'modulo' si no existe al arrancar la API"""
-    with obtener_conexion() as conexion:
-        cursor = conexion.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS modulo (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                titulo TEXT NOT NULL,
-                lenguaje TEXT NOT NULL,
-                horas INTEGER NOT NULL,
-                disponible BOOLEAN NOT NULL DEFAULT 1
-            )
-        """)
-        conexion.commit()
+        db.close()
